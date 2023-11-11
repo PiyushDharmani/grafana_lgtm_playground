@@ -10,7 +10,7 @@ provider "helm" {
 
 resource "null_resource" "minikube_setup" {
   provisioner "local-exec" {
-    command = "minikube start --cpus=max --memory=max --nodes=3"
+    command = "minikube start --cpus=max --memory=max --driver=docker --nodes=3 --kubernetes-version=v1.27.4"
   }
 
   provisioner "local-exec" {
@@ -27,6 +27,18 @@ resource "null_resource" "minikube_setup" {
   }
 }
 
+variable "grafana_username" {
+  description = "Username for Grafana"
+  type        = string
+  default     = "admin"
+}
+
+variable "grafana_password" {
+  description = "Password for Grafana"
+  type        = string
+  default     = "admin"
+}
+
 resource "helm_release" "kube_prometheus_stack" {
   depends_on       = [null_resource.minikube_setup]
   name             = "kps"
@@ -35,7 +47,6 @@ resource "helm_release" "kube_prometheus_stack" {
   chart            = "kube-prometheus-stack"
   create_namespace = true
   atomic           = true
-  wait             = true
 
   values = [file("values_kps.yaml")]
 }
@@ -48,7 +59,6 @@ resource "helm_release" "promtail" {
   chart            = "promtail"
   create_namespace = true
   atomic           = true
-  wait             = true
 
   values = [file("values_promtail.yaml")]
 }
@@ -61,7 +71,32 @@ resource "helm_release" "lgtm" {
   chart            = "lgtm-distributed"
   create_namespace = true
   atomic           = true
-  wait             = true
 
   values = [file("values_lgtm.yaml")]
+
+  set {
+    name  = "grafana.adminUser"
+    value = var.grafana_username
+  }
+
+  set {
+    name  = "grafana.adminPassword"
+    value = var.grafana_password
+  }
+
+}
+
+output "lgtm_grafana_port_forward_command" {
+  description = "Command to port forward the lgtm-grafana service"
+  value       = "kubectl port-forward services/lgtm-grafana 8080:80 -n lgtm"
+}
+
+output "grafana_username" {
+  description = "Grafana Username"
+  value       = var.grafana_username
+}
+
+output "grafana_password" {
+  description = "Grafana Password"
+  value       = var.grafana_password
 }

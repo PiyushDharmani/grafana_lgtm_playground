@@ -2,8 +2,8 @@
 grafana:
   # -- Deploy Grafana if enabled. See [upstream readme](https://github.com/grafana/helm-charts/tree/main/charts/grafana#configuration) for full values reference.
   enabled: true
-  adminUser: admin
-  adminPassword: admin
+  adminUser: ""
+  adminPassword: ""
 
   # -- Grafana data sources config. Connects to all three by default
   datasources:
