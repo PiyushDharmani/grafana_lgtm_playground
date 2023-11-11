@@ -37,11 +37,11 @@ resource "helm_release" "kube_prometheus_stack" {
   atomic           = true
   wait             = true
 
-  values = [file("kube-prometheus-stack/values.yaml")]
+  values = [file("values_kps.yaml")]
 }
 
 resource "helm_release" "promtail" {
-  depends_on       = [null_resource.minikube_setup,helm_release.kube_prometheus_stack]
+  depends_on       = [null_resource.minikube_setup, helm_release.kube_prometheus_stack]
   name             = "promtail"
   namespace        = "promtail"
   repository       = "https://grafana.github.io/helm-charts"
@@ -50,11 +50,11 @@ resource "helm_release" "promtail" {
   atomic           = true
   wait             = true
 
-  values = [file("promtail/values.yaml")]
+  values = [file("values_promtail.yaml")]
 }
 
 resource "helm_release" "lgtm" {
-  depends_on       = [null_resource.minikube_setup,helm_release.kube_prometheus_stack]
+  depends_on       = [null_resource.minikube_setup, helm_release.kube_prometheus_stack]
   name             = "lgtm"
   namespace        = "lgtm"
   repository       = "https://grafana.github.io/helm-charts"
@@ -63,5 +63,5 @@ resource "helm_release" "lgtm" {
   atomic           = true
   wait             = true
 
-  values = [file("lgtm-distributed/values.yaml")]
+  values = [file("values_lgtm.yaml")]
 }
