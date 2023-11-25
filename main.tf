@@ -1,13 +1,3 @@
-provider "kubernetes" {
-  config_path = "~/.kube/config"
-}
-
-provider "helm" {
-  kubernetes {
-    config_path = "~/.kube/config"
-  }
-}
-
 resource "null_resource" "minikube_setup" {
   provisioner "local-exec" {
     command = "minikube start --cpus=max --memory=max --driver=docker --nodes=3 --kubernetes-version=v1.27.4"
@@ -25,18 +15,6 @@ resource "null_resource" "minikube_setup" {
     when    = destroy
     command = "minikube delete"
   }
-}
-
-variable "grafana_username" {
-  description = "Username for Grafana"
-  type        = string
-  default     = "admin"
-}
-
-variable "grafana_password" {
-  description = "Password for Grafana"
-  type        = string
-  default     = "admin"
 }
 
 resource "helm_release" "kube_prometheus_stack" {
@@ -119,19 +97,4 @@ resource "helm_release" "tempo" {
   atomic           = true
 
   values = [file("values/tempo.yaml")]
-}
-
-output "lgtm_grafana_port_forward_command" {
-  description = "Command to port forward the lgtm-grafana service"
-  value       = "kubectl port-forward services/grafana 8080:80 -n grafana"
-}
-
-output "grafana_username" {
-  description = "Grafana Username"
-  value       = var.grafana_username
-}
-
-output "grafana_password" {
-  description = "Grafana Password"
-  value       = var.grafana_password
 }
