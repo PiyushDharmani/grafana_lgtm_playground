@@ -1,10 +1,10 @@
 resource "null_resource" "minikube_setup" {
   provisioner "local-exec" {
-    command = "minikube start --cpus=max --memory=max --driver=docker --nodes=3 --kubernetes-version=v1.27.4"
+    command = "minikube delete --profile=lgtm && sleep 2 && minikube start --cpus=max --memory=max --driver=docker --nodes=3 --kubernetes-version=v1.27 --profile=lgtm "
   }
 
   provisioner "local-exec" {
-    command = "minikube addons enable metrics-server && minikube addons enable volumesnapshots && minikube addons enable csi-hostpath-driver && minikube addons disable storage-provisioner && minikube addons disable default-storageclass"
+    command = "minikube addons enable metrics-server --profile=lgtm && minikube addons enable volumesnapshots --profile=lgtm && minikube addons enable csi-hostpath-driver --profile=lgtm && minikube addons disable storage-provisioner --profile=lgtm && minikube addons disable default-storageclass --profile=lgtm"
   }
 
   provisioner "local-exec" {
@@ -13,7 +13,7 @@ resource "null_resource" "minikube_setup" {
 
   provisioner "local-exec" {
     when    = destroy
-    command = "minikube delete"
+    command = "minikube delete --profile=lgtm"
   }
 }
 
