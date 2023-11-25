@@ -48,7 +48,7 @@ resource "helm_release" "kube_prometheus_stack" {
   create_namespace = true
   atomic           = true
 
-  values = [file("values_kps.yaml")]
+  values = [file("values/kps.yaml")]
 }
 
 resource "helm_release" "promtail" {
@@ -60,35 +60,70 @@ resource "helm_release" "promtail" {
   create_namespace = true
   atomic           = true
 
-  values = [file("values_promtail.yaml")]
+  values = [file("values/promtail.yaml")]
 }
 
-resource "helm_release" "lgtm" {
+resource "helm_release" "grafana" {
   depends_on       = [null_resource.minikube_setup, helm_release.kube_prometheus_stack]
-  name             = "lgtm"
-  namespace        = "lgtm"
+  name             = "grafana"
+  namespace        = "grafana"
   repository       = "https://grafana.github.io/helm-charts"
-  chart            = "lgtm-distributed"
+  chart            = "grafana"
   create_namespace = true
   atomic           = true
 
-  values = [file("values_lgtm.yaml")]
+  values = [file("values/grafana.yaml")]
 
   set {
-    name  = "grafana.adminUser"
+    name  = "adminUser"
     value = var.grafana_username
   }
 
   set {
-    name  = "grafana.adminPassword"
+    name  = "adminPassword"
     value = var.grafana_password
   }
+}
 
+resource "helm_release" "loki" {
+  depends_on       = [null_resource.minikube_setup, helm_release.kube_prometheus_stack]
+  name             = "loki"
+  namespace        = "loki"
+  repository       = "https://grafana.github.io/helm-charts"
+  chart            = "loki-distributed"
+  create_namespace = true
+  atomic           = true
+
+  values = [file("values/loki.yaml")]
+}
+
+resource "helm_release" "mimir" {
+  depends_on       = [null_resource.minikube_setup, helm_release.kube_prometheus_stack]
+  name             = "mimir"
+  namespace        = "mimir"
+  repository       = "https://grafana.github.io/helm-charts"
+  chart            = "mimir-distributed"
+  create_namespace = true
+  atomic           = true
+
+  values = [file("values/mimir.yaml")]
+}
+
+resource "helm_release" "tempo" {
+  depends_on       = [null_resource.minikube_setup, helm_release.kube_prometheus_stack]
+  name             = "tempo"
+  namespace        = "tempo"
+  repository       = "https://grafana.github.io/helm-charts"
+  chart            = "tempo-distributed"
+  create_namespace = true
+  atomic           = true
+
+  values = [file("values/tempo.yaml")]
 }
 
 output "lgtm_grafana_port_forward_command" {
   description = "Command to port forward the lgtm-grafana service"
-  value       = "kubectl port-forward services/lgtm-grafana 8080:80 -n lgtm"
+  value       = "kubectl port-forward services/grafana 8080:80 -n grafana"
 }
 
 output "grafana_username" {

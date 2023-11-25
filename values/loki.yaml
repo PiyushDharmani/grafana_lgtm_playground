@@ -1,0 +1,5 @@
+tableManager:
+  enabled: false
+
+serviceMonitor:
+  enabled: true
