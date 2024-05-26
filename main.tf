@@ -1,6 +1,6 @@
 resource "null_resource" "minikube_setup" {
   provisioner "local-exec" {
-    command = "minikube delete --profile=lgtm && sleep 2 && minikube start --cpus=max --memory=max --driver=docker --nodes=3 --kubernetes-version=v1.27 --profile=lgtm "
+    command = "minikube delete --profile=lgtm && sleep 2 && minikube start --cpus=max --memory=max --driver=docker --nodes=3 --kubernetes-version=v1.28 --profile=lgtm "
   }
 
   provisioner "local-exec" {
@@ -9,6 +9,10 @@ resource "null_resource" "minikube_setup" {
 
   provisioner "local-exec" {
     command = "kubectl patch storageclass csi-hostpath-sc -p '{\"metadata\": {\"annotations\":{\"storageclass.kubernetes.io/is-default-class\":\"true\"}}}'"
+  }
+
+  provisioner "local-exec" {
+    command = "kubectl patch storageclass standard -p '{\"metadata\": {\"annotations\":{\"storageclass.kubernetes.io/is-default-class\":\"false\"}}}'"
   }
 
   provisioner "local-exec" {
@@ -29,7 +33,7 @@ resource "helm_release" "kube_prometheus_stack" {
   values = [file("values/kps.yaml")]
 }
 
-resource "helm_release" "promtail" {
+resource "helm_release" "promtail" { #https://community.grafana.com/t/promtail-container-crashes-with-an-error-failed-to-make-file-target-manager-too-many-open-files/86248
   depends_on       = [null_resource.minikube_setup, helm_release.kube_prometheus_stack]
   name             = "promtail"
   namespace        = "promtail"
